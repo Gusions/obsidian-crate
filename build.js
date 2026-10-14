@@ -1,0 +1,10 @@
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const core = fs.readFileSync(path.join(__dirname, 'src/core.js'), 'utf8');
+const main = fs.readFileSync(path.join(__dirname, 'src/main.js'), 'utf8');
+const marker = "require('./core')";
+if (!main.includes(marker)) throw new Error(`build.js: ${marker} not found in src/main.js`);
+const bundled = main.replace(marker, `(() => { const module = { exports: {} };\n${core}\nreturn module.exports; })()`);
+fs.writeFileSync(path.join(__dirname, 'main.js'), bundled);
+console.log('Built main.js');
