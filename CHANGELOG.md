@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+- The side panel now lives with the collection view: it opens with it and disappears when the last collection tab is closed, so the left sidebar goes back to normal. The separate "Show side panel" command is gone; "Open collection" and the ribbon icon open both.
+- The "Where records are saved" section in the side panel is now collapsible (closed by default, the choice is remembered).
+
 ## 0.4.0
 - First public release.
 - English and Italian interface, following the Obsidian language (or chosen in settings).

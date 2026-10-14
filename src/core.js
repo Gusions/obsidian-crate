@@ -33,7 +33,7 @@ function parseCSV(text, t = makeT('en')) {
 // ---------- i18n: English is the source language, Italian is bundled. Add a language = add one object. ----------
 const STR = {
   en: {
-    'app.open': 'Open Crate', 'cmd.open': 'Open collection', 'cmd.sidebar': 'Show side panel', 'cmd.add': 'Add record', 'cmd.covers': 'Fetch missing covers', 'cmd.import': 'Import CSV',
+    'app.open': 'Open Crate', 'cmd.open': 'Open collection', 'cmd.add': 'Add record', 'cmd.covers': 'Fetch missing covers', 'cmd.import': 'Import CSV',
     'folder.where': 'Records are saved in the folder “{path}”.', 'notes.heading': 'Listening notes', 'default.name': 'Record',
     'err.required': 'Title and artist are required.', 'err.folder': 'Use a valid relative path, for example Vinyl/Collection.',
     'err.csvQuote': 'Invalid CSV: unclosed quotation marks.', 'err.csvEmpty': 'The CSV needs a header row and at least one record.', 'err.csvDup': 'The CSV has duplicate headers.', 'err.csvRow': 'Row {n}: wrong number of columns.',
@@ -76,7 +76,7 @@ const STR = {
     'set.note': 'Music data and covers: Apple search or Discogs when linked. Crate never syncs changes back to Discogs. Remote covers contact their server when shown.', 'set.discogsLink': 'Discogs · developer settings'
   },
   it: {
-    'app.open': 'Apri Crate', 'cmd.open': 'Apri collezione', 'cmd.sidebar': 'Mostra pannello laterale', 'cmd.add': 'Aggiungi vinile', 'cmd.covers': 'Recupera copertine mancanti', 'cmd.import': 'Importa CSV',
+    'app.open': 'Apri Crate', 'cmd.open': 'Apri collezione', 'cmd.add': 'Aggiungi vinile', 'cmd.covers': 'Recupera copertine mancanti', 'cmd.import': 'Importa CSV',
     'folder.where': 'I dischi sono salvati nella cartella “{path}”.', 'notes.heading': 'Appunti di ascolto', 'default.name': 'Vinile',
     'err.required': 'Titolo e artista sono obbligatori.', 'err.folder': 'Usa un percorso relativo valido, ad esempio Vinili/Collezione.',
     'err.csvQuote': 'CSV non valido: virgolette non chiuse.', 'err.csvEmpty': 'Il CSV deve contenere intestazioni e almeno un disco.', 'err.csvDup': 'Il CSV contiene intestazioni duplicate.', 'err.csvRow': 'Riga {n}: numero di colonne non valido.',

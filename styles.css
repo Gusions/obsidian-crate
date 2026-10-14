@@ -134,6 +134,7 @@
 .crate-side-group .crate-side-item { margin-left: 14px; }
 .crate-side-more { margin: 2px 8px 4px 22px; padding: 2px 0; font-size: var(--font-ui-smaller); color: var(--text-accent); cursor: pointer; }
 .crate-side-more:hover { text-decoration: underline; }
+.crate-side-storage > .crate-side-store { margin: 4px 4px 0; }
 .crate-side-store { margin: 0 4px; padding: 10px 12px; border-radius: var(--radius-m); background: var(--background-secondary); border: 1px solid var(--background-modifier-border); }
 .crate-side-path { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; color: var(--text-normal); }
 .crate-side-path code { font-size: var(--font-ui-small); background: none; padding: 0; }

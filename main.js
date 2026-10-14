@@ -36,7 +36,7 @@ function parseCSV(text, t = makeT('en')) {
 // ---------- i18n: English is the source language, Italian is bundled. Add a language = add one object. ----------
 const STR = {
   en: {
-    'app.open': 'Open Crate', 'cmd.open': 'Open collection', 'cmd.sidebar': 'Show side panel', 'cmd.add': 'Add record', 'cmd.covers': 'Fetch missing covers', 'cmd.import': 'Import CSV',
+    'app.open': 'Open Crate', 'cmd.open': 'Open collection', 'cmd.add': 'Add record', 'cmd.covers': 'Fetch missing covers', 'cmd.import': 'Import CSV',
     'folder.where': 'Records are saved in the folder “{path}”.', 'notes.heading': 'Listening notes', 'default.name': 'Record',
     'err.required': 'Title and artist are required.', 'err.folder': 'Use a valid relative path, for example Vinyl/Collection.',
     'err.csvQuote': 'Invalid CSV: unclosed quotation marks.', 'err.csvEmpty': 'The CSV needs a header row and at least one record.', 'err.csvDup': 'The CSV has duplicate headers.', 'err.csvRow': 'Row {n}: wrong number of columns.',
@@ -79,7 +79,7 @@ const STR = {
     'set.note': 'Music data and covers: Apple search or Discogs when linked. Crate never syncs changes back to Discogs. Remote covers contact their server when shown.', 'set.discogsLink': 'Discogs · developer settings'
   },
   it: {
-    'app.open': 'Apri Crate', 'cmd.open': 'Apri collezione', 'cmd.sidebar': 'Mostra pannello laterale', 'cmd.add': 'Aggiungi vinile', 'cmd.covers': 'Recupera copertine mancanti', 'cmd.import': 'Importa CSV',
+    'app.open': 'Apri Crate', 'cmd.open': 'Apri collezione', 'cmd.add': 'Aggiungi vinile', 'cmd.covers': 'Recupera copertine mancanti', 'cmd.import': 'Importa CSV',
     'folder.where': 'I dischi sono salvati nella cartella “{path}”.', 'notes.heading': 'Appunti di ascolto', 'default.name': 'Vinile',
     'err.required': 'Titolo e artista sono obbligatori.', 'err.folder': 'Usa un percorso relativo valido, ad esempio Vinili/Collezione.',
     'err.csvQuote': 'CSV non valido: virgolette non chiuse.', 'err.csvEmpty': 'Il CSV deve contenere intestazioni e almeno un disco.', 'err.csvDup': 'Il CSV contiene intestazioni duplicate.', 'err.csvRow': 'Riga {n}: numero di colonne non valido.',
@@ -228,7 +228,7 @@ return module.exports; })();
 
 const VIEW = 'crate-collection';
 const SIDEBAR = 'crate-sidebar';
-const DEFAULTS = { folder: 'Vinili', accentMode: 'theme', accent: '#d79255', cardSize: 190, layout: 'grid', sort: 'artist', customFields: '', autoCover: true, sidebarSeen: false, language: 'auto' };
+const DEFAULTS = { folder: 'Vinili', accentMode: 'theme', accent: '#d79255', cardSize: 190, layout: 'grid', sort: 'artist', customFields: '', autoCover: true, language: 'auto', storageOpen: false };
 const REQUIRED = ['title', 'artist'];
 const FACETS = ['artist', 'genre', 'label', 'decade', 'location', 'tags'];
 
@@ -315,9 +315,8 @@ class CratePlugin extends Plugin {
     this.ui = { status: 'all', query: '', sort: this.settings.sort, facet: null };
     this.registerView(VIEW, leaf => new CrateView(leaf, this));
     this.registerView(SIDEBAR, leaf => new CrateSidebar(leaf, this));
-    this.addRibbonIcon('disc-3', tr('app.open'), async () => { await this.ensureSidebar(true); await this.activate(); });
+    this.addRibbonIcon('disc-3', tr('app.open'), () => this.activate());
     this.addCommand({ id: 'open-collection', name: tr('cmd.open'), callback: () => this.activate() });
-    this.addCommand({ id: 'show-sidebar', name: tr('cmd.sidebar'), callback: () => this.ensureSidebar(true) });
     this.addCommand({ id: 'add-record', name: tr('cmd.add'), callback: () => new RecordModal(this).open() });
     this.addCommand({ id: 'fetch-covers', name: tr('cmd.covers'), callback: () => this.fillCovers() });
     this.addCommand({ id: 'import-csv', name: tr('cmd.import'), callback: () => this.pickCSV() });
@@ -331,8 +330,8 @@ class CratePlugin extends Plugin {
     this.app.workspace.onLayoutReady(async () => {
       try {
         await this.scan();
-        // First run only: put the Crate panel in the left sidebar so everything is reachable from there.
-        if (!this.settings.sidebarSeen) { this.settings.sidebarSeen = true; await this.saveData(this.settings); await this.ensureSidebar(true); }
+        // The panel only lives together with the collection view: drop one restored from a previous session.
+        if (!this.app.workspace.getLeavesOfType(VIEW).length) this.closeSidebar();
       } catch (e) { fail(e); }
     });
   }
@@ -340,11 +339,19 @@ class CratePlugin extends Plugin {
     try { const f = validFolder(this.settings.folder); return path === f || String(path).startsWith(f + '/'); } catch { return false; }
   }
   folderPath() { try { return validFolder(this.settings.folder); } catch { return this.settings.folder; } }
+  // Opens the collection and, with it, the side panel (navigation and filters).
   async activate() {
+    await this.ensureSidebar(true);
     let leaf = this.app.workspace.getLeavesOfType(VIEW)[0];
     if (!leaf) { leaf = this.app.workspace.getLeaf('tab'); await leaf.setViewState({ type: VIEW, active: true }); await this.scan(); }
     await this.app.workspace.revealLeaf(leaf);
     return leaf;
+  }
+  closeSidebar() { this.app.workspace.detachLeavesOfType(SIDEBAR); }
+  // Called when a collection view closes: with no collection left, the panel goes away and the left sidebar returns to normal.
+  onCollectionClosed(leaf) {
+    if (this.app.workspace.getLeavesOfType(VIEW).some(l => l !== leaf)) return;
+    this.closeSidebar();
   }
   async ensureSidebar(reveal = false) {
     const ws = this.app.workspace;
@@ -501,6 +508,7 @@ class CrateView extends ItemView {
   getDisplayText() { return 'Crate'; }
   getIcon() { return 'disc-3'; }
   async onOpen() { this.build(); }
+  async onClose() { this.plugin.onCollectionClosed(this.leaf); }
   // Builds the static shell once; update() then refreshes data without losing focus or scroll.
   build() {
     const p = this.plugin, ui = p.ui, root = this.contentEl; root.empty(); root.addClass('crate'); theme(root, p.settings);
@@ -680,8 +688,10 @@ class CrateSidebar extends ItemView {
       }
     }
 
-    const store = root.createDiv('crate-side-section');
-    store.createDiv({ cls: 'crate-side-h', text: tr('side.storage') });
+    const store = root.createEl('details', { cls: 'crate-side-group crate-side-storage' });
+    if (p.settings.storageOpen) store.setAttr('open', '');
+    store.addEventListener('toggle', async () => { if (store.open !== !!p.settings.storageOpen) { p.settings.storageOpen = store.open; await p.saveData(p.settings); } });
+    store.createEl('summary').createSpan({ text: tr('side.storage') });
     const path = p.folderPath(), exists = !!p.app.vault.getAbstractFileByPath(path);
     const box = store.createDiv('crate-side-store');
     const line = box.createDiv('crate-side-path'); setIcon(line.createSpan('crate-side-icon'), 'folder'); line.createEl('code', { text: path + '/' });

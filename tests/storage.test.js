@@ -35,3 +35,10 @@ test('only folder paths trigger a rescan',()=>{
 test('empty title never writes a file',async()=>{
  const p=new Crate(); await assert.rejects(()=>p.saveRecord({title:' ',artist:'A'}),/required/);
 });
+test('the side panel closes with the last collection view and not before',()=>{
+ const p=new Crate(); let detached=[]; const view={}, other={};
+ p.app={workspace:{detachLeavesOfType:t=>detached.push(t),getLeavesOfType:t=>t==='crate-collection'?[view,other]:[]}};
+ p.onCollectionClosed(view); assert.deepEqual(detached,[]);
+ p.app.workspace.getLeavesOfType=t=>t==='crate-collection'?[view]:[];
+ p.onCollectionClosed(view); assert.deepEqual(detached,['crate-sidebar']);
+});

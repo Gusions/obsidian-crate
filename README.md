@@ -29,7 +29,7 @@
 
 **With [BRAT](https://github.com/TfTHacker/obsidian42-brat):** add `Gusions/obsidian-crate` as a beta plugin.
 
-The first time it starts, the Crate panel opens in the left sidebar. If you close it, bring it back with the command **Crate: Show side panel** or the disc icon in the ribbon.
+Click the disc icon in the ribbon (or run **Crate: Open collection**): the collection opens in a tab and the Crate panel opens in the left sidebar next to it. Close the collection tab and the panel goes away, leaving your sidebar as it was. If you close only the panel, the collection keeps working with its own tabs.
 
 ## Where your records live
 
